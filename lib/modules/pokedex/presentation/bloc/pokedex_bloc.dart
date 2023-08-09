@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pokedex/modules/pokedex/domain/entities/pokemon.dart';
+import 'package:pokedex/modules/pokedex/infrastructure/datasources/isar_datasource_impl.dart';
 import 'package:pokedex/modules/pokedex/infrastructure/datasources/pokemon_remote_datasource_impl.dart';
 import 'package:pokedex/modules/pokedex/infrastructure/repositories/pokemon_repository_impl.dart';
 
@@ -9,7 +10,7 @@ part 'pokedex_state.dart';
 
 class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
   final _pokemonRepository =
-      PokemonRepositoryImpl(PokemonRemoteDatasourceImpl());
+      PokemonRepositoryImpl(PokemonRemoteDatasourceImpl(), IsarDatasourceImpl());
 
   PokedexBloc()
       : super(const PokedexState(

@@ -4,7 +4,6 @@ import 'package:pokedex/modules/pokedex/domain/datasources/isar_datasource.dart'
 import 'package:pokedex/modules/pokedex/domain/entities/pokemon.dart';
 
 class IsarDatasourceImpl extends IsarDatasource {
-  
   late Future<Isar> db;
 
   IsarDatasourceImpl() {
@@ -32,9 +31,11 @@ class IsarDatasourceImpl extends IsarDatasource {
   }
 
   @override
-  Future<void> savePokemons(List<Pokemon> pokemons) {
-    // TODO: implement savePokemons
-    throw UnimplementedError();
-  }
+  Future<void> savePokemons(List<Pokemon> pokemons) async {
+    final isar = await db;
 
+    for (final pokemon in pokemons) {
+      isar.writeTxnSync(() => isar.pokemons.putSync(pokemon));
+    }
+  }
 }
