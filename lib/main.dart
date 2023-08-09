@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pokedex/core/router/app_router.dart';
 import 'package:pokedex/core/theme/app_theme.dart';
-import 'package:pokedex/modules/pokedex/pokedex.dart';
 
 void main() {
   runApp(const MainApp());
@@ -11,14 +11,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
       theme: AppTheme().getTheme(),
-      home: const Scaffold(
-        body: Center(
-          child: PokedexScreen(),
-        ),
-      ),
     );
   }
 }

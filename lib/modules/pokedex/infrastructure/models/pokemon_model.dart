@@ -15,7 +15,7 @@ class PokemonModel extends Pokemon {
         id: addZeros(json["id"].toString()),
         moves: List<Move>.from(json["moves"].map((x) => Move.fromJson(x))),
         name: json["name"],
-        types: List<Type>.from(json["types"].map((x) => Type.fromJson(x))),
+        types: List<PokemonType>.from(json["types"].map((x) => PokemonType.fromJson(x))),
       );
 
   static String addZeros(String number) {

@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pokedex/modules/pokedex/domain/entities/pokemon.dart';
 
 class PokemonListLink extends StatelessWidget {
@@ -19,13 +20,13 @@ class PokemonListLink extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: FadeIn(
         child: GestureDetector(
-          onTap: () {},
+          onTap: () => context.push('/pokemon/:${pokemon.id}'),
           child: SizedBox(
             width: size.width * 0.4,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: pokemon.types.first.type.typeColor,
+                color: pokemon.types.first.type?.typeColor,
                 boxShadow: const [
                   BoxShadow(
                     color: Colors.black45,
@@ -51,7 +52,7 @@ class PokemonListLink extends StatelessWidget {
                         const SizedBox(width: 16),
                         _PokemonTypesView(
                             types:
-                                pokemon.types.map((e) => e.type.name).toList()),
+                                pokemon.types.map((e) => e.type?.name).toList()),
                         const Spacer(),
                         Image.network(
                           'https://assets.pokemon.com/assets/cms2/img/pokedex/full/${pokemon.id}.png',
@@ -72,7 +73,7 @@ class PokemonListLink extends StatelessWidget {
 }
 
 class _PokemonTypesView extends StatelessWidget {
-  final List<PokemonType> types;
+  final List<PokemonTypeEnum?> types;
 
   const _PokemonTypesView({required this.types});
 
@@ -98,7 +99,7 @@ class _PokemonTypesView extends StatelessWidget {
                         vertical: 1.2,
                       ),
                       child: Text(
-                        e.name.toString(),
+                        e?.name.toString() ?? '',
                         style: textStyles.labelMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,

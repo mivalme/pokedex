@@ -1,30 +1,41 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
 
-class Pokemon {
+part 'pokemon.g.dart';
+
+@Collection(inheritance: false)
+class Pokemon extends Equatable {
+  final Id isarId;
   final List<Ability> abilities;
   final String id;
   final List<Move> moves;
-  final List<Type> types;
+  final List<PokemonType> types;
   final String name;
 
-  Pokemon({
+  const Pokemon({
+    this.isarId = Isar.autoIncrement,
     required this.abilities,
     required this.id,
     required this.moves,
     required this.types,
     required this.name,
   });
+
+  @ignore @override 
+  List<Object> get props => [isarId, abilities, id, moves, types, name];
 }
 
+@embedded
 class Ability {
-  final Species ability;
-  final bool isHidden;
-  final int slot;
+  final Species? ability;
+  final bool? isHidden;
+  final int? slot;
 
   Ability({
-    required this.ability,
-    required this.isHidden,
-    required this.slot,
+    this.ability,
+    this.isHidden,
+    this.slot,
   });
 
   factory Ability.fromJson(Map<String, dynamic> json) => Ability(
@@ -34,13 +45,14 @@ class Ability {
       );
 }
 
+@embedded
 class Species {
-  final String name;
-  final String url;
+  final String? name;
+  final String? url;
 
   Species({
-    required this.name,
-    required this.url,
+    this.name,
+    this.url,
   });
 
   factory Species.fromJson(Map<String, dynamic> json) => Species(
@@ -49,11 +61,12 @@ class Species {
       );
 }
 
+@embedded
 class Move {
-  final Species move;
+  final Species? move;
 
   Move({
-    required this.move,
+    this.move,
   });
 
   factory Move.fromJson(Map<String, dynamic> json) => Move(
@@ -61,22 +74,23 @@ class Move {
       );
 }
 
-class Type {
-  final int slot;
-  final TypeInfo type;
+@embedded
+class PokemonType {
+  final int? slot;
+  final TypeInfo? type;
 
-  Type({
-    required this.slot,
-    required this.type,
+  PokemonType({
+    this.slot,
+    this.type,
   });
 
-  factory Type.fromJson(Map<String, dynamic> json) => Type(
+  factory PokemonType.fromJson(Map<String, dynamic> json) => PokemonType(
         slot: json["slot"],
         type: TypeInfo.fromJson(json["type"]),
       );
 }
 
-enum PokemonType {
+enum PokemonTypeEnum {
   normal,
   fighting,
   flying,
@@ -99,21 +113,23 @@ enum PokemonType {
   shadow,
 }
 
+@Embedded(inheritance: false)
 class TypeInfo {
-  final PokemonType name;
-  final String url;
+  @enumerated
+  final PokemonTypeEnum name;
+  final String? url;
 
   TypeInfo({
-    required this.name,
-    required this.url,
+    this.name = PokemonTypeEnum.unknown,
+    this.url,
   });
 
   factory TypeInfo.fromJson(Map<String, dynamic> json) {
-    PokemonType name;
+    PokemonTypeEnum name;
     try {
-      name = PokemonType.values.byName(json["name"]);
+      name = PokemonTypeEnum.values.byName(json["name"]);
     } catch (_) {
-      name = PokemonType.unknown;
+      name = PokemonTypeEnum.unknown;
     }
 
     return TypeInfo(
@@ -122,33 +138,34 @@ class TypeInfo {
     );
   }
 
+  @ignore
   Color get typeColor {
     switch (name) {
-      case PokemonType.grass:
+      case PokemonTypeEnum.grass:
         return const Color(0xff00A78D);
-      case PokemonType.fire:
+      case PokemonTypeEnum.fire:
         return const Color(0xffDB7775);
-      case PokemonType.water:
+      case PokemonTypeEnum.water:
         return const Color(0xff00A3D2);
-      case PokemonType.bug:
+      case PokemonTypeEnum.bug:
         return const Color(0xff8C9E5F);
-      case PokemonType.normal:
+      case PokemonTypeEnum.normal:
         return const Color(0xff8F8F8F);
-      case PokemonType.poison:
+      case PokemonTypeEnum.poison:
         return const Color(0xff715F9E);
-      case PokemonType.electric:
+      case PokemonTypeEnum.electric:
         return const Color(0xffFFC135);
-      case PokemonType.ground:
+      case PokemonTypeEnum.ground:
         return const Color(0xff865B00);
-      case PokemonType.fairy:
+      case PokemonTypeEnum.fairy:
         return const Color(0xffCE4A90);
-      case PokemonType.fighting:
+      case PokemonTypeEnum.fighting:
         return const Color(0xff5C0030);
-      case PokemonType.psychic:
+      case PokemonTypeEnum.psychic:
         return const Color(0xff3F2C4E);
-      case PokemonType.rock:
+      case PokemonTypeEnum.rock:
         return const Color(0xffA0522D);
-      case PokemonType.ghost:
+      case PokemonTypeEnum.ghost:
         return const Color(0xffF981BF);
       default:
         return Colors.yellow;
