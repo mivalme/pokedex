@@ -41,7 +41,7 @@ class _PokemonDetailView extends StatelessWidget {
 
     return Scaffold(
       body: CustomScrollView(
-        physics: const ClampingScrollPhysics(),
+        // physics: const ClampingScrollPhysics(),
         slivers: [
           _PokemonDetailSliverAppBar(pokemon: pokemon),
           SliverList(
@@ -57,7 +57,7 @@ class _PokemonDetailView extends StatelessWidget {
                         color: Colors.white,
                         boxShadow: const [
                           BoxShadow(
-                            color: Colors.black45,
+                            color: Colors.black26,
                             blurRadius: 10,
                             offset: Offset(0, 10),
                           )
@@ -67,20 +67,26 @@ class _PokemonDetailView extends StatelessWidget {
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
-                            Text('Abilities', style: textStyles.titleLarge),
-                            const SizedBox(width: 16),
-                            Wrap(
-                              spacing: 16,
+                            Row(
                               children: [
-                                ...pokemon.abilities.map((e) {
-                                  return Text(
-                                    e.ability?.name ?? '',
+                                Text('Identifier Number:',
+                                    style: textStyles.titleMedium),
+                                const SizedBox(width: 16),
+                                Text('#${pokemon.id}',
                                     style: textStyles.bodyLarge
-                                        ?.copyWith(fontWeight: FontWeight.w700),
-                                  );
-                                }),
+                                        ?.copyWith(fontWeight: FontWeight.w800)),
                               ],
                             ),
+                            Row(
+                              children: [
+                                Text('Official Name:',
+                                    style: textStyles.titleMedium),
+                                const SizedBox(width: 16),
+                                Text(pokemon.name,
+                                    style: textStyles.bodyLarge
+                                        ?.copyWith(fontWeight: FontWeight.w800)),
+                              ],
+                            )
                           ],
                         ),
                       ),
@@ -92,7 +98,7 @@ class _PokemonDetailView extends StatelessWidget {
                         color: Colors.white,
                         boxShadow: const [
                           BoxShadow(
-                            color: Colors.black45,
+                            color: Colors.black26,
                             blurRadius: 10,
                             offset: Offset(0, 10),
                           )
@@ -139,7 +145,7 @@ class _PokemonDetailView extends StatelessWidget {
                           color: Colors.white,
                           boxShadow: const [
                             BoxShadow(
-                              color: Colors.black45,
+                              color: Colors.black26,
                               blurRadius: 10,
                               offset: Offset(0, 10),
                             )
@@ -168,7 +174,42 @@ class _PokemonDetailView extends StatelessWidget {
                               })
                             ],
                           ),
-                        ))
+                        )),
+                    const SizedBox(height: 32),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white,
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 10),
+                          )
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Text('Abilities', style: textStyles.titleLarge),
+                            const SizedBox(width: 16),
+                            Wrap(
+                              spacing: 16,
+                              children: [
+                                ...pokemon.abilities.map((e) {
+                                  return Text(
+                                    e.ability?.name ?? '',
+                                    style: textStyles.bodyLarge
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -214,7 +255,7 @@ class _PokemonDetailSliverAppBar extends StatelessWidget {
         titlePadding: EdgeInsets.only(top: size.height * 0.15),
         title: Image.memory(
           Uint8List.fromList(pokemon.image),
-          height: 180,
+          height: size.height * 0.2,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => const Placeholder(),
         ),

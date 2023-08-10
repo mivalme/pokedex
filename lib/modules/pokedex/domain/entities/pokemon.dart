@@ -6,24 +6,34 @@ part 'pokemon.g.dart';
 
 @Collection(inheritance: false)
 class Pokemon extends Equatable {
+  @Index(unique: true, replace: true)
+  final String id;
+
   final Id isarId;
   final List<Ability> abilities;
-  final String id;
-  final List<Move> moves;
   final List<PokemonType> types;
   final String name;
+  final List<int> image;
+  final int height;
+  final int weight;
+  final List<Stats> stats;
 
   const Pokemon({
     this.isarId = Isar.autoIncrement,
     required this.abilities,
     required this.id,
-    required this.moves,
     required this.types,
     required this.name,
+    required this.image,
+    required this.height,
+    required this.weight,
+    required this.stats,
   });
 
-  @ignore @override 
-  List<Object> get props => [isarId, abilities, id, moves, types, name];
+  @ignore
+  @override
+  List<Object> get props =>
+      [isarId, abilities, id, types, name, image, height, weight, stats];
 }
 
 @embedded
@@ -62,19 +72,6 @@ class Species {
 }
 
 @embedded
-class Move {
-  final Species? move;
-
-  Move({
-    this.move,
-  });
-
-  factory Move.fromJson(Map<String, dynamic> json) => Move(
-        move: Species.fromJson(json["move"]),
-      );
-}
-
-@embedded
 class PokemonType {
   final int? slot;
   final TypeInfo? type;
@@ -87,6 +84,35 @@ class PokemonType {
   factory PokemonType.fromJson(Map<String, dynamic> json) => PokemonType(
         slot: json["slot"],
         type: TypeInfo.fromJson(json["type"]),
+      );
+}
+
+@embedded
+class Stats {
+  final int? baseStat;
+  final Stat? stat;
+
+  Stats({
+    this.baseStat,
+    this.stat,
+  });
+
+  factory Stats.fromJson(Map<String, dynamic> json) => Stats(
+        baseStat: json["base_stat"],
+        stat: Stat.fromJson(json["stat"]),
+      );
+}
+
+@embedded
+class Stat {
+  final String? name;
+
+  Stat({
+    this.name,
+  });
+
+  factory Stat.fromJson(Map<String, dynamic> json) => Stat(
+        name: json["name"],
       );
 }
 
@@ -142,31 +168,41 @@ class TypeInfo {
   Color get typeColor {
     switch (name) {
       case PokemonTypeEnum.grass:
-        return const Color(0xff00A78D);
+        return const Color(0xff48CFB2);
       case PokemonTypeEnum.fire:
-        return const Color(0xffDB7775);
+        return const Color(0xffFA6C6C);
       case PokemonTypeEnum.water:
-        return const Color(0xff00A3D2);
+        return const Color(0xff6890F0);
       case PokemonTypeEnum.bug:
-        return const Color(0xff8C9E5F);
+        return const Color(0xffA8B820);
       case PokemonTypeEnum.normal:
-        return const Color(0xff8F8F8F);
+        return const Color(0xffA8A878);
       case PokemonTypeEnum.poison:
-        return const Color(0xff715F9E);
+        return const Color(0xffA040A0);
       case PokemonTypeEnum.electric:
-        return const Color(0xffFFC135);
+        return const Color(0xffFFCE4B);
       case PokemonTypeEnum.ground:
-        return const Color(0xff865B00);
+        return const Color(0xffE0C068);
       case PokemonTypeEnum.fairy:
-        return const Color(0xffCE4A90);
+        return const Color(0xffEE99AC);
       case PokemonTypeEnum.fighting:
-        return const Color(0xff5C0030);
+        return const Color(0xffC03028);
       case PokemonTypeEnum.psychic:
-        return const Color(0xff3F2C4E);
+        return const Color(0xffF85888);
       case PokemonTypeEnum.rock:
-        return const Color(0xffA0522D);
+        return const Color(0xffB8A038);
       case PokemonTypeEnum.ghost:
-        return const Color(0xffF981BF);
+        return const Color(0xff705898);
+      case PokemonTypeEnum.flying:
+        return const Color(0xffA890F0);
+      case PokemonTypeEnum.steel:
+        return const Color(0xffB8B8D0);
+      case PokemonTypeEnum.ice:
+        return const Color(0xff98D8D8);
+      case PokemonTypeEnum.dragon:
+        return const Color(0xff7038F8);
+      case PokemonTypeEnum.dark:
+        return const Color(0xff705848);
       default:
         return Colors.yellow;
     }

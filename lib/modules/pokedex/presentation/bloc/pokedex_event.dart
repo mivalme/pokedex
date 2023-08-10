@@ -8,3 +8,9 @@ abstract class PokedexEvent extends Equatable {
 }
 
 class FetchPokemonsEvent extends PokedexEvent {}
+
+class SelectPokemonEvent extends PokedexEvent {
+  final String pokemonId;
+
+  const SelectPokemonEvent({required this.pokemonId});
+}

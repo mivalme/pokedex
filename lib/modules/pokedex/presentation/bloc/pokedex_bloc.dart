@@ -9,16 +9,18 @@ part 'pokedex_event.dart';
 part 'pokedex_state.dart';
 
 class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
-  final _pokemonRepository =
-      PokemonRepositoryImpl(PokemonRemoteDatasourceImpl(), IsarDatasourceImpl());
+  final _pokemonRepository = PokemonRepositoryImpl(
+      PokemonRemoteDatasourceImpl(), IsarDatasourceImpl());
 
   PokedexBloc()
       : super(const PokedexState(
           pokemons: [],
+          selectedPokemon: null,
           currentPage: 0,
           isLoading: false,
         )) {
     on<FetchPokemonsEvent>(_onFetchPokemons);
+    on<SelectPokemonEvent>(_onSelectPokemon);
   }
 
   void _onFetchPokemons(
@@ -34,6 +36,14 @@ class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
       pokemons: [...state.pokemons, ...pokemons],
       currentPage: state.currentPage + 1,
       isLoading: false,
+    ));
+  }
+
+  void _onSelectPokemon(
+      SelectPokemonEvent event, Emitter<PokedexState> emit) async {
+    final pokemon = await _pokemonRepository.getPokemon(event.pokemonId);
+    emit(state.copyWith(
+      selectedPokemon: pokemon,
     ));
   }
 }

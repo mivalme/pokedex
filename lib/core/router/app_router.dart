@@ -13,7 +13,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/pokemon/:id',
       // name: HomeScreen.name,
-      builder: (context, state) => const PokemonDetailScreen(),
+      builder: (context, state) {
+        final pokemonId = state.pathParameters['id'] ?? 'no-id';
+        return PokemonDetailScreen(pokemonId: pokemonId);
+      },
     ),
   ],
 );

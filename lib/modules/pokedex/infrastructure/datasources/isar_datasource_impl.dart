@@ -25,17 +25,20 @@ class IsarDatasourceImpl extends IsarDatasource {
   }
 
   @override
-  Future<List<Pokemon>> fetchPokemonList(int offset, int limit) {
-    // TODO: implement fetchPokemonList
-    throw UnimplementedError();
+  Future<List<Pokemon>> fetchPokemonList(int offset, int limit) async {
+    final isar = await db;
+    return isar.pokemons.where().offset(offset).limit(limit).findAll();
   }
 
   @override
   Future<void> savePokemons(List<Pokemon> pokemons) async {
     final isar = await db;
+    isar.writeTxnSync(() => isar.pokemons.putAllSync(pokemons));
+  }
 
-    for (final pokemon in pokemons) {
-      isar.writeTxnSync(() => isar.pokemons.putSync(pokemon));
-    }
+  @override
+  Future<Pokemon?> getPokemon(String id) async {
+    final isar = await db;
+    return isar.pokemons.where().idEqualTo(id).findFirst();
   }
 }

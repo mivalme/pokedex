@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +22,7 @@ class PokemonListLink extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: FadeIn(
         child: GestureDetector(
-          onTap: () => context.push('/pokemon/:${pokemon.id}'),
+          onTap: () => context.push('/pokemon/${pokemon.id}'),
           child: SizedBox(
             width: size.width * 0.4,
             child: DecoratedBox(
@@ -51,13 +53,15 @@ class PokemonListLink extends StatelessWidget {
                       children: [
                         const SizedBox(width: 16),
                         _PokemonTypesView(
-                            types:
-                                pokemon.types.map((e) => e.type?.name).toList()),
+                            types: pokemon.types
+                                .map((e) => e.type?.name)
+                                .toList()),
                         const Spacer(),
-                        Image.network(
-                          'https://assets.pokemon.com/assets/cms2/img/pokedex/full/${pokemon.id}.png',
-                          fit: BoxFit.cover,
+                        Image.memory(
+                          Uint8List.fromList(pokemon.image),
                           height: 90,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => const Placeholder(),
                         ),
                       ],
                     ),
@@ -91,7 +95,7 @@ class _PokemonTypesView extends StatelessWidget {
                   DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: Colors.white24,
+                      color: Colors.white12,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

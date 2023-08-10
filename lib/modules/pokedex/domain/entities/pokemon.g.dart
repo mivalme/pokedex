@@ -23,27 +23,42 @@ const PokemonSchema = CollectionSchema(
       type: IsarType.objectList,
       target: r'Ability',
     ),
-    r'id': PropertySchema(
+    r'height': PropertySchema(
       id: 1,
+      name: r'height',
+      type: IsarType.long,
+    ),
+    r'id': PropertySchema(
+      id: 2,
       name: r'id',
       type: IsarType.string,
     ),
-    r'moves': PropertySchema(
-      id: 2,
-      name: r'moves',
-      type: IsarType.objectList,
-      target: r'Move',
+    r'image': PropertySchema(
+      id: 3,
+      name: r'image',
+      type: IsarType.longList,
     ),
     r'name': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'name',
       type: IsarType.string,
     ),
+    r'stats': PropertySchema(
+      id: 5,
+      name: r'stats',
+      type: IsarType.objectList,
+      target: r'Stats',
+    ),
     r'types': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'types',
       type: IsarType.objectList,
       target: r'PokemonType',
+    ),
+    r'weight': PropertySchema(
+      id: 7,
+      name: r'weight',
+      type: IsarType.long,
     )
   },
   estimateSize: _pokemonEstimateSize,
@@ -51,14 +66,29 @@ const PokemonSchema = CollectionSchema(
   deserialize: _pokemonDeserialize,
   deserializeProp: _pokemonDeserializeProp,
   idName: r'isarId',
-  indexes: {},
+  indexes: {
+    r'id': IndexSchema(
+      id: -3268401673993471357,
+      name: r'id',
+      unique: true,
+      replace: true,
+      properties: [
+        IndexPropertySchema(
+          name: r'id',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {
     r'Ability': AbilitySchema,
     r'Species': SpeciesSchema,
-    r'Move': MoveSchema,
     r'PokemonType': PokemonTypeSchema,
-    r'TypeInfo': TypeInfoSchema
+    r'TypeInfo': TypeInfoSchema,
+    r'Stats': StatsSchema,
+    r'Stat': StatSchema
   },
   getId: _pokemonGetId,
   getLinks: _pokemonGetLinks,
@@ -81,15 +111,16 @@ int _pokemonEstimateSize(
     }
   }
   bytesCount += 3 + object.id.length * 3;
-  bytesCount += 3 + object.moves.length * 3;
+  bytesCount += 3 + object.image.length * 8;
+  bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 + object.stats.length * 3;
   {
-    final offsets = allOffsets[Move]!;
-    for (var i = 0; i < object.moves.length; i++) {
-      final value = object.moves[i];
-      bytesCount += MoveSchema.estimateSize(value, offsets, allOffsets);
+    final offsets = allOffsets[Stats]!;
+    for (var i = 0; i < object.stats.length; i++) {
+      final value = object.stats[i];
+      bytesCount += StatsSchema.estimateSize(value, offsets, allOffsets);
     }
   }
-  bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.types.length * 3;
   {
     final offsets = allOffsets[PokemonType]!;
@@ -113,20 +144,23 @@ void _pokemonSerialize(
     AbilitySchema.serialize,
     object.abilities,
   );
-  writer.writeString(offsets[1], object.id);
-  writer.writeObjectList<Move>(
-    offsets[2],
+  writer.writeLong(offsets[1], object.height);
+  writer.writeString(offsets[2], object.id);
+  writer.writeLongList(offsets[3], object.image);
+  writer.writeString(offsets[4], object.name);
+  writer.writeObjectList<Stats>(
+    offsets[5],
     allOffsets,
-    MoveSchema.serialize,
-    object.moves,
+    StatsSchema.serialize,
+    object.stats,
   );
-  writer.writeString(offsets[3], object.name);
   writer.writeObjectList<PokemonType>(
-    offsets[4],
+    offsets[6],
     allOffsets,
     PokemonTypeSchema.serialize,
     object.types,
   );
+  writer.writeLong(offsets[7], object.weight);
 }
 
 Pokemon _pokemonDeserialize(
@@ -143,23 +177,26 @@ Pokemon _pokemonDeserialize(
           Ability(),
         ) ??
         [],
-    id: reader.readString(offsets[1]),
+    height: reader.readLong(offsets[1]),
+    id: reader.readString(offsets[2]),
+    image: reader.readLongList(offsets[3]) ?? [],
     isarId: id,
-    moves: reader.readObjectList<Move>(
-          offsets[2],
-          MoveSchema.deserialize,
+    name: reader.readString(offsets[4]),
+    stats: reader.readObjectList<Stats>(
+          offsets[5],
+          StatsSchema.deserialize,
           allOffsets,
-          Move(),
+          Stats(),
         ) ??
         [],
-    name: reader.readString(offsets[3]),
     types: reader.readObjectList<PokemonType>(
-          offsets[4],
+          offsets[6],
           PokemonTypeSchema.deserialize,
           allOffsets,
           PokemonType(),
         ) ??
         [],
+    weight: reader.readLong(offsets[7]),
   );
   return object;
 }
@@ -180,18 +217,22 @@ P _pokemonDeserializeProp<P>(
           ) ??
           []) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readObjectList<Move>(
+      return (reader.readString(offset)) as P;
+    case 3:
+      return (reader.readLongList(offset) ?? []) as P;
+    case 4:
+      return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readObjectList<Stats>(
             offset,
-            MoveSchema.deserialize,
+            StatsSchema.deserialize,
             allOffsets,
-            Move(),
+            Stats(),
           ) ??
           []) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
+    case 6:
       return (reader.readObjectList<PokemonType>(
             offset,
             PokemonTypeSchema.deserialize,
@@ -199,6 +240,8 @@ P _pokemonDeserializeProp<P>(
             PokemonType(),
           ) ??
           []) as P;
+    case 7:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -213,6 +256,60 @@ List<IsarLinkBase<dynamic>> _pokemonGetLinks(Pokemon object) {
 }
 
 void _pokemonAttach(IsarCollection<dynamic> col, Id id, Pokemon object) {}
+
+extension PokemonByIndex on IsarCollection<Pokemon> {
+  Future<Pokemon?> getById(String id) {
+    return getByIndex(r'id', [id]);
+  }
+
+  Pokemon? getByIdSync(String id) {
+    return getByIndexSync(r'id', [id]);
+  }
+
+  Future<bool> deleteById(String id) {
+    return deleteByIndex(r'id', [id]);
+  }
+
+  bool deleteByIdSync(String id) {
+    return deleteByIndexSync(r'id', [id]);
+  }
+
+  Future<List<Pokemon?>> getAllById(List<String> idValues) {
+    final values = idValues.map((e) => [e]).toList();
+    return getAllByIndex(r'id', values);
+  }
+
+  List<Pokemon?> getAllByIdSync(List<String> idValues) {
+    final values = idValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'id', values);
+  }
+
+  Future<int> deleteAllById(List<String> idValues) {
+    final values = idValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'id', values);
+  }
+
+  int deleteAllByIdSync(List<String> idValues) {
+    final values = idValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'id', values);
+  }
+
+  Future<Id> putById(Pokemon object) {
+    return putByIndex(r'id', object);
+  }
+
+  Id putByIdSync(Pokemon object, {bool saveLinks = true}) {
+    return putByIndexSync(r'id', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllById(List<Pokemon> objects) {
+    return putAllByIndex(r'id', objects);
+  }
+
+  List<Id> putAllByIdSync(List<Pokemon> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
+  }
+}
 
 extension PokemonQueryWhereSort on QueryBuilder<Pokemon, Pokemon, QWhere> {
   QueryBuilder<Pokemon, Pokemon, QAfterWhere> anyIsarId() {
@@ -286,6 +383,49 @@ extension PokemonQueryWhere on QueryBuilder<Pokemon, Pokemon, QWhereClause> {
         upper: upperIsarId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterWhereClause> idEqualTo(String id) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'id',
+        value: [id],
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterWhereClause> idNotEqualTo(String id) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'id',
+              lower: [],
+              upper: [id],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'id',
+              lower: [id],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'id',
+              lower: [id],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'id',
+              lower: [],
+              upper: [id],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }
@@ -374,6 +514,59 @@ extension PokemonQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> heightEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'height',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> heightGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'height',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> heightLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'height',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> heightBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'height',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
@@ -506,6 +699,143 @@ extension PokemonQueryFilter
     });
   }
 
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageElementEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'image',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageElementGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'image',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageElementLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'image',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageElementBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'image',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'image',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'image',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'image',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'image',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'image',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> imageLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'image',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> isarIdEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -556,90 +886,6 @@ extension PokemonQueryFilter
         upper: upper,
         includeUpper: includeUpper,
       ));
-    });
-  }
-
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'moves',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'moves',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'moves',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'moves',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'moves',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'moves',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
     });
   }
 
@@ -773,6 +1019,90 @@ extension PokemonQueryFilter
     });
   }
 
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'stats',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'stats',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'stats',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'stats',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'stats',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'stats',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> typesLengthEqualTo(
       int length) {
     return QueryBuilder.apply(this, (query) {
@@ -856,6 +1186,59 @@ extension PokemonQueryFilter
       );
     });
   }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> weightEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'weight',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> weightGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'weight',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> weightLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'weight',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> weightBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'weight',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension PokemonQueryObject
@@ -867,10 +1250,10 @@ extension PokemonQueryObject
     });
   }
 
-  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> movesElement(
-      FilterQuery<Move> q) {
+  QueryBuilder<Pokemon, Pokemon, QAfterFilterCondition> statsElement(
+      FilterQuery<Stats> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'moves');
+      return query.object(q, r'stats');
     });
   }
 
@@ -886,6 +1269,18 @@ extension PokemonQueryLinks
     on QueryBuilder<Pokemon, Pokemon, QFilterCondition> {}
 
 extension PokemonQuerySortBy on QueryBuilder<Pokemon, Pokemon, QSortBy> {
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> sortByHeight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'height', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> sortByHeightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'height', Sort.desc);
+    });
+  }
+
   QueryBuilder<Pokemon, Pokemon, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -909,10 +1304,34 @@ extension PokemonQuerySortBy on QueryBuilder<Pokemon, Pokemon, QSortBy> {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> sortByWeight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weight', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> sortByWeightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weight', Sort.desc);
+    });
+  }
 }
 
 extension PokemonQuerySortThenBy
     on QueryBuilder<Pokemon, Pokemon, QSortThenBy> {
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> thenByHeight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'height', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> thenByHeightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'height', Sort.desc);
+    });
+  }
+
   QueryBuilder<Pokemon, Pokemon, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -948,10 +1367,28 @@ extension PokemonQuerySortThenBy
       return query.addSortBy(r'name', Sort.desc);
     });
   }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> thenByWeight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weight', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QAfterSortBy> thenByWeightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'weight', Sort.desc);
+    });
+  }
 }
 
 extension PokemonQueryWhereDistinct
     on QueryBuilder<Pokemon, Pokemon, QDistinct> {
+  QueryBuilder<Pokemon, Pokemon, QDistinct> distinctByHeight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'height');
+    });
+  }
+
   QueryBuilder<Pokemon, Pokemon, QDistinct> distinctById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -959,10 +1396,22 @@ extension PokemonQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Pokemon, Pokemon, QDistinct> distinctByImage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'image');
+    });
+  }
+
   QueryBuilder<Pokemon, Pokemon, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Pokemon, Pokemon, QDistinct> distinctByWeight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'weight');
     });
   }
 }
@@ -981,15 +1430,21 @@ extension PokemonQueryProperty
     });
   }
 
+  QueryBuilder<Pokemon, int, QQueryOperations> heightProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'height');
+    });
+  }
+
   QueryBuilder<Pokemon, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<Pokemon, List<Move>, QQueryOperations> movesProperty() {
+  QueryBuilder<Pokemon, List<int>, QQueryOperations> imageProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'moves');
+      return query.addPropertyName(r'image');
     });
   }
 
@@ -999,9 +1454,21 @@ extension PokemonQueryProperty
     });
   }
 
+  QueryBuilder<Pokemon, List<Stats>, QQueryOperations> statsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'stats');
+    });
+  }
+
   QueryBuilder<Pokemon, List<PokemonType>, QQueryOperations> typesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'types');
+    });
+  }
+
+  QueryBuilder<Pokemon, int, QQueryOperations> weightProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'weight');
     });
   }
 }
@@ -1621,116 +2088,6 @@ extension SpeciesQueryObject
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-const MoveSchema = Schema(
-  name: r'Move',
-  id: 5504967249916866048,
-  properties: {
-    r'move': PropertySchema(
-      id: 0,
-      name: r'move',
-      type: IsarType.object,
-      target: r'Species',
-    )
-  },
-  estimateSize: _moveEstimateSize,
-  serialize: _moveSerialize,
-  deserialize: _moveDeserialize,
-  deserializeProp: _moveDeserializeProp,
-);
-
-int _moveEstimateSize(
-  Move object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  {
-    final value = object.move;
-    if (value != null) {
-      bytesCount += 3 +
-          SpeciesSchema.estimateSize(value, allOffsets[Species]!, allOffsets);
-    }
-  }
-  return bytesCount;
-}
-
-void _moveSerialize(
-  Move object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeObject<Species>(
-    offsets[0],
-    allOffsets,
-    SpeciesSchema.serialize,
-    object.move,
-  );
-}
-
-Move _moveDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = Move(
-    move: reader.readObjectOrNull<Species>(
-      offsets[0],
-      SpeciesSchema.deserialize,
-      allOffsets,
-    ),
-  );
-  return object;
-}
-
-P _moveDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readObjectOrNull<Species>(
-        offset,
-        SpeciesSchema.deserialize,
-        allOffsets,
-      )) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-extension MoveQueryFilter on QueryBuilder<Move, Move, QFilterCondition> {
-  QueryBuilder<Move, Move, QAfterFilterCondition> moveIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'move',
-      ));
-    });
-  }
-
-  QueryBuilder<Move, Move, QAfterFilterCondition> moveIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'move',
-      ));
-    });
-  }
-}
-
-extension MoveQueryObject on QueryBuilder<Move, Move, QFilterCondition> {
-  QueryBuilder<Move, Move, QAfterFilterCondition> move(FilterQuery<Species> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'move');
-    });
-  }
-}
-
-// coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
-
 const PokemonTypeSchema = Schema(
   name: r'PokemonType',
   id: 229780386400146563,
@@ -1920,6 +2277,411 @@ extension PokemonTypeQueryObject
     });
   }
 }
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const StatsSchema = Schema(
+  name: r'Stats',
+  id: 6085053765032852394,
+  properties: {
+    r'baseStat': PropertySchema(
+      id: 0,
+      name: r'baseStat',
+      type: IsarType.long,
+    ),
+    r'stat': PropertySchema(
+      id: 1,
+      name: r'stat',
+      type: IsarType.object,
+      target: r'Stat',
+    )
+  },
+  estimateSize: _statsEstimateSize,
+  serialize: _statsSerialize,
+  deserialize: _statsDeserialize,
+  deserializeProp: _statsDeserializeProp,
+);
+
+int _statsEstimateSize(
+  Stats object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  {
+    final value = object.stat;
+    if (value != null) {
+      bytesCount +=
+          3 + StatSchema.estimateSize(value, allOffsets[Stat]!, allOffsets);
+    }
+  }
+  return bytesCount;
+}
+
+void _statsSerialize(
+  Stats object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeLong(offsets[0], object.baseStat);
+  writer.writeObject<Stat>(
+    offsets[1],
+    allOffsets,
+    StatSchema.serialize,
+    object.stat,
+  );
+}
+
+Stats _statsDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = Stats(
+    baseStat: reader.readLongOrNull(offsets[0]),
+    stat: reader.readObjectOrNull<Stat>(
+      offsets[1],
+      StatSchema.deserialize,
+      allOffsets,
+    ),
+  );
+  return object;
+}
+
+P _statsDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readLongOrNull(offset)) as P;
+    case 1:
+      return (reader.readObjectOrNull<Stat>(
+        offset,
+        StatSchema.deserialize,
+        allOffsets,
+      )) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension StatsQueryFilter on QueryBuilder<Stats, Stats, QFilterCondition> {
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> baseStatIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'baseStat',
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> baseStatIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'baseStat',
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> baseStatEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'baseStat',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> baseStatGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'baseStat',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> baseStatLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'baseStat',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> baseStatBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'baseStat',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> statIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'stat',
+      ));
+    });
+  }
+
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> statIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'stat',
+      ));
+    });
+  }
+}
+
+extension StatsQueryObject on QueryBuilder<Stats, Stats, QFilterCondition> {
+  QueryBuilder<Stats, Stats, QAfterFilterCondition> stat(FilterQuery<Stat> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'stat');
+    });
+  }
+}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const StatSchema = Schema(
+  name: r'Stat',
+  id: -739457159820072843,
+  properties: {
+    r'name': PropertySchema(
+      id: 0,
+      name: r'name',
+      type: IsarType.string,
+    )
+  },
+  estimateSize: _statEstimateSize,
+  serialize: _statSerialize,
+  deserialize: _statDeserialize,
+  deserializeProp: _statDeserializeProp,
+);
+
+int _statEstimateSize(
+  Stat object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  {
+    final value = object.name;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  return bytesCount;
+}
+
+void _statSerialize(
+  Stat object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeString(offsets[0], object.name);
+}
+
+Stat _statDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = Stat(
+    name: reader.readStringOrNull(offsets[0]),
+  );
+  return object;
+}
+
+P _statDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readStringOrNull(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension StatQueryFilter on QueryBuilder<Stat, Stat, QFilterCondition> {
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'name',
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'name',
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'name',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameContains(String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameMatches(String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'name',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Stat, Stat, QAfterFilterCondition> nameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
+}
+
+extension StatQueryObject on QueryBuilder<Stat, Stat, QFilterCondition> {}
 
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types

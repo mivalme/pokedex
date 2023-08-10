@@ -25,7 +25,26 @@ class PokemonRemoteDatasourceImpl extends PokemonRemoteDatasource {
     for (final item in responseModel.results) {
       final response = await dio.get(item.url);
       final responseModel = PokemonModel.fromJson(response.data);
-      pokemons.add(responseModel);
+
+      final image = await dio.get(
+        'https://assets.pokemon.com/assets/cms2/img/pokedex/full/${responseModel.id}.png',
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      final List<int> z = image.data;
+
+      PokemonModel p = PokemonModel(
+        abilities: responseModel.abilities,
+        id: responseModel.id,
+        types: responseModel.types,
+        name: responseModel.name,
+        image: z,
+        height: responseModel.height,
+        weight: responseModel.weight,
+        stats: responseModel.stats,
+      );
+
+      pokemons.add(p);
     }
 
     return pokemons;
