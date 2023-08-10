@@ -30,6 +30,19 @@ class _PokemonDetailView extends StatelessWidget {
     final pokemon = context.watch<PokedexBloc>().state.selectedPokemon;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
+    final colors = Theme.of(context).colorScheme;
+
+    final commonDecoration = BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      color: colors.secondaryContainer,
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black26,
+          blurRadius: 10,
+          offset: Offset(0, 10),
+        )
+      ],
+    );
 
     if (pokemon == null) {
       return const Center(
@@ -38,183 +51,159 @@ class _PokemonDetailView extends StatelessWidget {
     }
 
     return Scaffold(
-      body: CustomScrollView(
-        // physics: const ClampingScrollPhysics(),
-        slivers: [
-          _PokemonDetailSliverAppBar(pokemon: pokemon),
-          SliverList(
-              delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10,
-                            offset: Offset(0, 10),
-                          )
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Text('Identifier Number:',
-                                    style: textStyles.titleMedium),
-                                const SizedBox(width: 16),
-                                Text('#${pokemon.id}',
-                                    style: textStyles.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.w800)),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text('Official Name:',
-                                    style: textStyles.titleMedium),
-                                const SizedBox(width: 16),
-                                Text(pokemon.name,
-                                    style: textStyles.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.w800)),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10,
-                            offset: Offset(0, 10),
-                          )
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: size.width * 0.3,
-                              child: Column(
-                                children: [
-                                  Text('Height:',
-                                      style: textStyles.titleMedium),
-                                  Text('${pokemon.height / 10} m',
-                                      style: textStyles.bodyLarge?.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            SizedBox(
-                              width: size.width * 0.3,
-                              child: Column(
-                                children: [
-                                  Text('Weight:',
-                                      style: textStyles.titleMedium),
-                                  Text('${pokemon.weight / 10} Kg',
-                                      style: textStyles.bodyLarge?.copyWith(
-                                          fontWeight: FontWeight.w800)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.white,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 10,
-                              offset: Offset(0, 10),
-                            )
-                          ],
-                        ),
+      body: Container(
+        color: colors.secondaryContainer,
+        child: CustomScrollView(
+          // physics: const ClampingScrollPhysics(),
+          slivers: [
+            _PokemonDetailSliverAppBar(pokemon: pokemon),
+            SliverList(
+                delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      DecoratedBox(
+                        decoration: commonDecoration,
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text('Base Stats', style: textStyles.titleLarge),
-                              const SizedBox(height: 16),
-                              ...pokemon.stats.map((e) {
-                                return Row(
-                                  children: [
-                                    Text(e.stat?.name ?? ''),
-                                    const Spacer(),
-                                    Text('${e.baseStat}'),
-                                    const SizedBox(width: 16),
-                                    SizedBox(
-                                        width: size.width * 0.4,
-                                        child: LinearProgressIndicator(
-                                            value: (e.baseStat! / 100)))
-                                  ],
-                                );
-                              })
+                              Row(
+                                children: [
+                                  Text('Identifier Number:',
+                                      style: textStyles.titleMedium
+                                          ?.copyWith(color: colors.secondary)),
+                                  const SizedBox(width: 16),
+                                  Text('#${pokemon.id}',
+                                      style: textStyles.bodyLarge?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: colors.primary)),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text('Official Name:',
+                                      style: textStyles.titleMedium
+                                          ?.copyWith(color: colors.secondary)),
+                                  const SizedBox(width: 16),
+                                  Text(pokemon.name,
+                                      style: textStyles.bodyLarge?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: colors.primary)),
+                                ],
+                              )
                             ],
                           ),
-                        )),
-                    const SizedBox(height: 32),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10,
-                            offset: Offset(0, 10),
-                          )
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Text('Abilities', style: textStyles.titleLarge),
-                            const SizedBox(width: 16),
-                            Wrap(
-                              spacing: 16,
-                              children: [
-                                ...pokemon.abilities.map((e) {
-                                  return Text(
-                                    e.ability?.name ?? '',
-                                    style: textStyles.bodyLarge
-                                        ?.copyWith(fontWeight: FontWeight.w700),
-                                  );
-                                }),
-                              ],
-                            ),
-                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-            childCount: 1,
-          ))
-        ],
+                      const SizedBox(height: 32),
+                      DecoratedBox(
+                        decoration: commonDecoration,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: size.width * 0.3,
+                                child: Column(
+                                  children: [
+                                    Text('Height:',
+                                        style: textStyles.titleMedium
+                                            ?.copyWith(color: colors.secondary)),
+                                    Text(
+                                      '${pokemon.height / 10} m',
+                                      style: textStyles.bodyLarge?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: colors.primary),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              SizedBox(
+                                width: size.width * 0.3,
+                                child: Column(
+                                  children: [
+                                    Text('Weight:',
+                                        style: textStyles.titleMedium
+                                            ?.copyWith(color: colors.secondary)),
+                                    Text(
+                                      '${pokemon.weight / 10} Kg',
+                                      style: textStyles.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color: colors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      DecoratedBox(
+                          decoration: commonDecoration,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text('Base Stats', style: textStyles.titleLarge?.copyWith(color: colors.primary)),
+                                const SizedBox(height: 16),
+                                ...pokemon.stats.map((e) {
+                                  return Row(
+                                    children: [
+                                      Text(e.stat?.name ?? '', style: textStyles.bodyMedium?.copyWith(color: colors.secondary),),
+                                      const Spacer(),
+                                      Text('${e.baseStat}', style: textStyles.bodyLarge?.copyWith(color: colors.primary),),
+                                      const SizedBox(width: 16),
+                                      SizedBox(
+                                          width: size.width * 0.4,
+                                          child: LinearProgressIndicator(
+                                              value: (e.baseStat! / 100)))
+                                    ],
+                                  );
+                                })
+                              ],
+                            ),
+                          )),
+                      const SizedBox(height: 32),
+                      DecoratedBox(
+                        decoration: commonDecoration,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              Text('Abilities', style: textStyles.titleLarge?.copyWith(color: colors.secondary)),
+                              const SizedBox(width: 16),
+                              Wrap(
+                                spacing: 16,
+                                children: [
+                                  ...pokemon.abilities.map((e) {
+                                    return Text(
+                                      e.ability?.name ?? '',
+                                      style: textStyles.bodyLarge
+                                          ?.copyWith(fontWeight: FontWeight.w700, color: colors.primary),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              childCount: 1,
+            ))
+          ],
+        ),
       ),
     );
   }
@@ -229,6 +218,7 @@ class _PokemonDetailSliverAppBar extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final textStyles = Theme.of(context).textTheme;
     final readPokedexBloc = context.read<PokedexBloc>();
+    final colors = Theme.of(context).colorScheme;
 
     return SliverAppBar(
       pinned: true,
@@ -237,14 +227,14 @@ class _PokemonDetailSliverAppBar extends StatelessWidget {
       title: Text(
         pokemon.name.toUpperCase(),
         style: textStyles.headlineMedium?.copyWith(
-          color: Colors.white,
+          color: colors.secondaryContainer,
           fontWeight: FontWeight.w700,
         ),
       ),
       leading: IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.arrow_back_rounded,
-          color: Colors.white,
+          color: colors.secondaryContainer,
         ),
         onPressed: () {
           context.pop();
@@ -257,19 +247,19 @@ class _PokemonDetailSliverAppBar extends StatelessWidget {
               if (image == null) return;
               readPokedexBloc.add(UpdatePokemonImageEvent(image: image));
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.photo_library_rounded,
-              color: Colors.white,
+              color: colors.secondaryContainer,
             )),
-            IconButton(
+        IconButton(
             onPressed: () async {
               final image = await CameraGalleryServiceImpl().takePhoto();
               if (image == null) return;
               readPokedexBloc.add(UpdatePokemonImageEvent(image: image));
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.camera_alt_outlined,
-              color: Colors.white,
+              color: colors.secondaryContainer,
             )),
       ],
       flexibleSpace: FlexibleSpaceBar(

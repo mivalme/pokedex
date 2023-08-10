@@ -17,5 +17,10 @@ const appMenuItems = <MenuItem>[
     title: 'Pokedex',
     link: '/',
     icon: Icons.wallet_travel,
+  ),
+  MenuItem(
+    title: 'Settings',
+    link: '/settings',
+    icon: Icons.settings,
   )
 ];

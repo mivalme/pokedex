@@ -18,6 +18,7 @@ class _PokedexView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaffoldfKey = GlobalKey<ScaffoldState>();
     final pokemons = context.watch<PokedexBloc>().state.pokemons;
     final isFiltered = context.watch<PokedexBloc>().state.isFiltered;
     final isLoading = context.watch<PokedexBloc>().state.isLoading;
@@ -31,7 +32,7 @@ class _PokedexView extends StatelessWidget {
           decoration: const InputDecoration(hintText: 'Search'),
         ),
       ),
-      drawer: const SideMenu(),
+      drawer: SideMenu(scaffoldKey: scaffoldfKey),
       body: pokemons.isEmpty && !isFiltered
           ? const Center(
               child: CircularProgressIndicator(strokeWidth: 2),
