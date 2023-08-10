@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pokedex/core/helpers/camera_gallery_service_impl.dart';
 import 'package:pokedex/modules/pokedex/domain/entities/pokemon.dart';
 import 'package:pokedex/modules/pokedex/presentation/bloc/pokedex_bloc.dart';
 
@@ -16,16 +17,13 @@ class PokemonDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          PokedexBloc()..add(SelectPokemonEvent(pokemonId: pokemonId)),
-      child: const _PokemonDetailView(),
-    );
+    return _PokemonDetailView(pokemonId);
   }
 }
 
 class _PokemonDetailView extends StatelessWidget {
-  const _PokemonDetailView();
+  final String pokemonId;
+  const _PokemonDetailView(this.pokemonId);
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +71,8 @@ class _PokemonDetailView extends StatelessWidget {
                                     style: textStyles.titleMedium),
                                 const SizedBox(width: 16),
                                 Text('#${pokemon.id}',
-                                    style: textStyles.bodyLarge
-                                        ?.copyWith(fontWeight: FontWeight.w800)),
+                                    style: textStyles.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.w800)),
                               ],
                             ),
                             Row(
@@ -83,8 +81,8 @@ class _PokemonDetailView extends StatelessWidget {
                                     style: textStyles.titleMedium),
                                 const SizedBox(width: 16),
                                 Text(pokemon.name,
-                                    style: textStyles.bodyLarge
-                                        ?.copyWith(fontWeight: FontWeight.w800)),
+                                    style: textStyles.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.w800)),
                               ],
                             )
                           ],
@@ -230,6 +228,7 @@ class _PokemonDetailSliverAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final textStyles = Theme.of(context).textTheme;
+    final readPokedexBloc = context.read<PokedexBloc>();
 
     return SliverAppBar(
       pinned: true,
@@ -251,11 +250,35 @@ class _PokemonDetailSliverAppBar extends StatelessWidget {
           context.pop();
         },
       ),
+      actions: [
+        IconButton(
+            onPressed: () async {
+              final image = await CameraGalleryServiceImpl().selectPhoto();
+              if (image == null) return;
+              readPokedexBloc.add(UpdatePokemonImageEvent(image: image));
+            },
+            icon: const Icon(
+              Icons.photo_library_rounded,
+              color: Colors.white,
+            )),
+            IconButton(
+            onPressed: () async {
+              final image = await CameraGalleryServiceImpl().takePhoto();
+              if (image == null) return;
+              readPokedexBloc.add(UpdatePokemonImageEvent(image: image));
+            },
+            icon: const Icon(
+              Icons.camera_alt_outlined,
+              color: Colors.white,
+            )),
+      ],
       flexibleSpace: FlexibleSpaceBar(
+        centerTitle: true,
         titlePadding: EdgeInsets.only(top: size.height * 0.15),
         title: Image.memory(
           Uint8List.fromList(pokemon.image),
-          height: size.height * 0.2,
+          height: size.height * 0.18,
+          width: size.height * 0.18,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => const Placeholder(),
         ),

@@ -41,4 +41,13 @@ class IsarDatasourceImpl extends IsarDatasource {
     final isar = await db;
     return isar.pokemons.where().idEqualTo(id).findFirst();
   }
+
+  @override
+  Future<void> updatePokemonImage(String id, List<int> image) async {
+    final isar = await db;
+    final pokemon = await isar.pokemons.where().idEqualTo(id).findFirst();
+    if (pokemon == null) return;
+    return await isar.writeTxnSync(
+        () => isar.pokemons.putSync(pokemon.copyWith(image: image)));
+  }
 }

@@ -20,3 +20,9 @@ class FilterPokemonsEvent extends PokedexEvent {
 
   const FilterPokemonsEvent({required this.query});
 }
+
+class UpdatePokemonImageEvent extends PokedexEvent {
+  final List<int> image;
+
+  const UpdatePokemonImageEvent({required this.image});
+}

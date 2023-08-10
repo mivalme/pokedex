@@ -28,4 +28,9 @@ class PokemonRepositoryImpl extends PokemonRepository {
   Future<Pokemon?> getPokemon(String id) {
     return isarDatasource.getPokemon(id);
   }
+
+  @override
+  Future<void> updatePokemonImage(String id, List<int> image) {
+    return isarDatasource.updatePokemonImage(id, image);
+  }
 }

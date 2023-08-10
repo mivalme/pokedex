@@ -9,10 +9,7 @@ class PokedexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => PokedexBloc()..add(FetchPokemonsEvent()),
-      child: const _PokedexView(),
-    );
+    return const _PokedexView();
   }
 }
 
@@ -21,16 +18,16 @@ class _PokedexView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyles = Theme.of(context).textTheme;
     final pokemons = context.watch<PokedexBloc>().state.pokemons;
     final isFiltered = context.watch<PokedexBloc>().state.isFiltered;
-
+    final isLoading = context.watch<PokedexBloc>().state.isLoading;
 
     return Scaffold(
       appBar: AppBar(
-        // title: Text('Pokedex', style: textStyles.headlineMedium),
         title: TextField(
-          onChanged: (value) => context.read<PokedexBloc>().add(FilterPokemonsEvent(query: value)),
+          onChanged: (value) => context
+              .read<PokedexBloc>()
+              .add(FilterPokemonsEvent(query: value)),
           decoration: const InputDecoration(hintText: 'Search'),
         ),
       ),
@@ -44,6 +41,12 @@ class _PokedexView extends StatelessWidget {
               loadNextPage: () =>
                   context.read<PokedexBloc>().add(FetchPokemonsEvent()),
             ),
+      floatingActionButton: isLoading
+          ? const FloatingActionButton(
+              onPressed: null,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
     );
   }
 }

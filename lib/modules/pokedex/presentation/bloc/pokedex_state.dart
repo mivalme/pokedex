@@ -20,7 +20,8 @@ class PokedexState extends Equatable {
     Pokemon? selectedPokemon,
     int? currentPage,
     bool? isLoading,
-    bool? isFiltered
+    bool? isFiltered,
+    ScrollController? scrollController,
   }) =>
       PokedexState(
         pokemons: pokemons ?? this.pokemons,

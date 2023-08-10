@@ -2,8 +2,10 @@ import 'dart:typed_data';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pokedex/modules/pokedex/domain/entities/pokemon.dart';
+import 'package:pokedex/modules/pokedex/presentation/bloc/pokedex_bloc.dart';
 
 class PokemonListLink extends StatelessWidget {
   final Pokemon pokemon;
@@ -22,7 +24,12 @@ class PokemonListLink extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: FadeIn(
         child: GestureDetector(
-          onTap: () => context.push('/pokemon/${pokemon.id}'),
+          onTap: () {
+            context.push('/pokemon/${pokemon.id}');
+            context
+                .read<PokedexBloc>()
+                .add(SelectPokemonEvent(pokemonId: pokemon.id));
+          },
           child: SizedBox(
             width: size.width * 0.4,
             child: DecoratedBox(
@@ -60,8 +67,10 @@ class PokemonListLink extends StatelessWidget {
                         Image.memory(
                           Uint8List.fromList(pokemon.image),
                           height: 90,
+                          width: 90,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Placeholder(),
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Placeholder(),
                         ),
                       ],
                     ),

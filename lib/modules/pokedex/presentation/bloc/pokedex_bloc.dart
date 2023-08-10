@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pokedex/modules/pokedex/domain/entities/pokemon.dart';
@@ -18,11 +19,12 @@ class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
           selectedPokemon: null,
           currentPage: 0,
           isLoading: false,
-          isFiltered: false
+          isFiltered: false,
         )) {
     on<FetchPokemonsEvent>(_onFetchPokemons);
     on<SelectPokemonEvent>(_onSelectPokemon);
     on<FilterPokemonsEvent>(_onFilterPokemons);
+    on<UpdatePokemonImageEvent>(_onUpdatePokemonImage);
   }
 
   void _onFetchPokemons(
@@ -34,11 +36,13 @@ class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
     final pokemons =
         await _pokemonRepository.fetchPokemonList(state.currentPage * 20, 20);
 
-    emit(state.copyWith(
-      pokemons: [...state.pokemons, ...pokemons],
-      currentPage: state.currentPage + 1,
-      isLoading: false,
-    ));
+    emit(
+      state.copyWith(
+        pokemons: [...state.pokemons, ...pokemons],
+        currentPage: state.currentPage + 1,
+        isLoading: false,
+      ),
+    );
   }
 
   void _onSelectPokemon(
@@ -54,12 +58,25 @@ class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
     final pokemons =
         await _pokemonRepository.fetchPokemonList(0, state.currentPage * 20);
 
-    final filteredPokemons =
-        pokemons.where((e) => e.name.toLowerCase().contains(event.query.toLowerCase()));
+    final filteredPokemons = pokemons
+        .where((e) => e.name.toLowerCase().contains(event.query.toLowerCase()));
 
     emit(state.copyWith(
       pokemons: filteredPokemons.toList(),
       isFiltered: event.query.isNotEmpty,
     ));
+  }
+
+  void _onUpdatePokemonImage(
+      UpdatePokemonImageEvent event, Emitter<PokedexState> emit) async {
+    final pokemon = state.selectedPokemon;
+    if (pokemon == null) return;
+    await _pokemonRepository.updatePokemonImage(pokemon.id, event.image);
+
+    emit(state.copyWith(
+        pokemons: state.pokemons.map((e) {
+          return e.id == pokemon.id ? e.copyWith(image: event.image) : e;
+        }).toList(),
+        selectedPokemon: pokemon.copyWith(image: event.image)));
   }
 }

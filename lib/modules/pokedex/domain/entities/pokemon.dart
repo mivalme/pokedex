@@ -30,6 +30,27 @@ class Pokemon extends Equatable {
     required this.stats,
   });
 
+  Pokemon copyWith({
+    List<Ability>? abilities,
+    List<PokemonType>? types,
+    String? name,
+    List<int>? image,
+    int? height,
+    int? weight,
+    List<Stats>? stats,
+  }) =>
+      Pokemon(
+        isarId: isarId,
+        abilities: abilities ?? this.abilities,
+        id: id,
+        types: types ?? this.types,
+        name: name ?? this.name,
+        image: image ?? this.image,
+        height: height ?? this.height,
+        weight: weight ?? this.weight,
+        stats: stats ?? this.stats,
+      );
+
   @ignore
   @override
   List<Object> get props =>
