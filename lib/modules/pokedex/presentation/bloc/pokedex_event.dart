@@ -14,3 +14,9 @@ class SelectPokemonEvent extends PokedexEvent {
 
   const SelectPokemonEvent({required this.pokemonId});
 }
+
+class FilterPokemonsEvent extends PokedexEvent {
+  final String query;
+
+  const FilterPokemonsEvent({required this.query});
+}

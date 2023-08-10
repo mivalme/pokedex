@@ -18,14 +18,16 @@ class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
           selectedPokemon: null,
           currentPage: 0,
           isLoading: false,
+          isFiltered: false
         )) {
     on<FetchPokemonsEvent>(_onFetchPokemons);
     on<SelectPokemonEvent>(_onSelectPokemon);
+    on<FilterPokemonsEvent>(_onFilterPokemons);
   }
 
   void _onFetchPokemons(
       FetchPokemonsEvent event, Emitter<PokedexState> emit) async {
-    if (state.isLoading) return;
+    if (state.isLoading || state.isFiltered) return;
 
     emit(state.copyWith(isLoading: true));
 
@@ -44,6 +46,20 @@ class PokedexBloc extends Bloc<PokedexEvent, PokedexState> {
     final pokemon = await _pokemonRepository.getPokemon(event.pokemonId);
     emit(state.copyWith(
       selectedPokemon: pokemon,
+    ));
+  }
+
+  void _onFilterPokemons(
+      FilterPokemonsEvent event, Emitter<PokedexState> emit) async {
+    final pokemons =
+        await _pokemonRepository.fetchPokemonList(0, state.currentPage * 20);
+
+    final filteredPokemons =
+        pokemons.where((e) => e.name.toLowerCase().contains(event.query.toLowerCase()));
+
+    emit(state.copyWith(
+      pokemons: filteredPokemons.toList(),
+      isFiltered: event.query.isNotEmpty,
     ));
   }
 }

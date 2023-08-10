@@ -13,14 +13,14 @@ class PokemonRepositoryImpl extends PokemonRepository {
   @override
   Future<List<Pokemon>> fetchPokemonList(int offset, int limit) async {
     final bool isConnected = await InternetConnection().hasInternetAccess;
+    final localPokemons = await isarDatasource.fetchPokemonList(offset, limit);
 
-    if (isConnected) {
+    if (isConnected && localPokemons.isEmpty) {
       final pokemons = await remoteDatasource.fetchPokemonList(offset, limit);
       await isarDatasource.savePokemons(pokemons);
       return pokemons;
     } else {
-      final pokemons = await isarDatasource.fetchPokemonList(offset, limit);
-      return pokemons;
+      return localPokemons;
     }
   }
 

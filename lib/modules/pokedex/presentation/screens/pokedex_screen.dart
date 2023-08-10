@@ -23,13 +23,19 @@ class _PokedexView extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
     final pokemons = context.watch<PokedexBloc>().state.pokemons;
+    final isFiltered = context.watch<PokedexBloc>().state.isFiltered;
+
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pokedex', style: textStyles.headlineMedium),
+        // title: Text('Pokedex', style: textStyles.headlineMedium),
+        title: TextField(
+          onChanged: (value) => context.read<PokedexBloc>().add(FilterPokemonsEvent(query: value)),
+          decoration: const InputDecoration(hintText: 'Search'),
+        ),
       ),
       drawer: const SideMenu(),
-      body: pokemons.isEmpty
+      body: pokemons.isEmpty && !isFiltered
           ? const Center(
               child: CircularProgressIndicator(strokeWidth: 2),
             )
