@@ -19,6 +19,7 @@ class PokemonListLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final textStyles = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -52,7 +53,7 @@ class PokemonListLink extends StatelessWidget {
                     Text(
                       pokemon.name.toUpperCase(),
                       style: textStyles.titleMedium?.copyWith(
-                        color: Colors.white,
+                        color: colors.secondaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -93,6 +94,7 @@ class _PokemonTypesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +116,7 @@ class _PokemonTypesView extends StatelessWidget {
                       child: Text(
                         e?.name.toString() ?? '',
                         style: textStyles.labelMedium?.copyWith(
-                          color: Colors.white,
+                          color: colors.secondaryContainer,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
